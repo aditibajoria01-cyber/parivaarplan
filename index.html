@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParivaarPlan | Say yes to home. Know you can keep it.</title>
+<meta name="description" content="ParivaarPlan's Yes Check helps young professionals answer money asks from home with a plan, not guilt. No login. No raw numbers stored.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF5EA;
+    --cream-2:#F4EAD7;
+    --card:#FFFDF8;
+    --ink:#2B1A12;
+    --ink-soft:#5A463B;
+    --maroon:#7A1E2C;
+    --maroon-dark:#5C1420;
+    --marigold:#E8A317;
+    --marigold-soft:#FBE3A6;
+    --marigold-text:#8A4F00;
+    --green:#1E7B4F;
+    --green-soft:#E3F3EA;
+    --wa:#D9FDD3;
+    --line:#E6D6BC;
+    --radius:16px;
+    --shadow:0 10px 30px rgba(92,20,32,.10);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:17px;line-height:1.6;overflow-x:hidden}
+  img,svg{max-width:100%}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;line-height:1.15;margin:0 0 .5em;color:var(--maroon-dark)}
+  h1{font-size:clamp(2.2rem,8vw,3.6rem);font-weight:700;letter-spacing:-.01em}
+  h2{font-size:clamp(1.7rem,5.5vw,2.5rem);font-weight:600}
+  h3{font-size:1.2rem;font-weight:600}
+  p{margin:0 0 1em}
+  a{color:var(--maroon)}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 20px}
+  section{padding:64px 0}
+  .eyebrow{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--marigold-text);margin-bottom:12px}
+  .lead{font-size:1.1rem;color:var(--ink-soft);max-width:60ch}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+  :focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+  .skip{position:absolute;left:12px;top:-60px;background:var(--maroon);color:#fff;padding:10px 14px;border-radius:8px;z-index:100}
+  .skip:focus{top:12px}
+
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 22px;border-radius:999px;font:600 1rem "Hanken Grotesk",sans-serif;text-decoration:none;cursor:pointer;border:2px solid transparent;transition:transform .15s,background .15s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--maroon);color:#fff}
+  .btn-primary:hover{background:var(--maroon-dark)}
+  .btn-ghost{background:transparent;color:var(--maroon);border-color:var(--maroon)}
+  .btn-ghost:hover{background:var(--cream-2)}
+  .btn-small{min-height:40px;padding:8px 16px;font-size:.92rem}
+
+  /* Nav */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(251,245,234,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px}
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--maroon-dark);font-family:"Fraunces",serif;font-weight:700;font-size:1.25rem}
+  .logo-mark{width:34px;height:34px;border-radius:50%;background:var(--maroon);display:grid;place-items:center;flex-shrink:0}
+  .logo-mark span{width:14px;height:14px;border-radius:50%;background:var(--marigold);box-shadow:0 0 0 4px rgba(232,163,23,.35)}
+  .nav-links{display:none;gap:24px;list-style:none;margin:0;padding:0}
+  .nav-links a{text-decoration:none;color:var(--ink-soft);font-weight:500;font-size:.95rem}
+  .nav-links a:hover{color:var(--maroon)}
+  .toran{height:8px;background:radial-gradient(circle at 8px 0,var(--marigold) 5px,transparent 6px) 0 0/24px 8px repeat-x, radial-gradient(circle at 20px 0,#D9541E 4px,transparent 5px) 0 0/24px 8px repeat-x}
+
+  /* Hero */
+  .hero{padding:40px 0 64px}
+  .hero-grid{display:grid;gap:40px;align-items:center}
+  .hero h1 em{font-style:italic;color:var(--maroon);background:linear-gradient(transparent 70%,var(--marigold-soft) 70%)}
+  .hero-ctas{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
+  .ticks{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.95rem;color:var(--ink-soft)}
+  .ticks li{display:flex;align-items:center;gap:8px}
+  .tick{width:20px;height:20px;border-radius:50%;background:var(--maroon);color:#fff;display:grid;place-items:center;font-size:.7rem;flex-shrink:0}
+
+  /* Phone card */
+  .phone{max-width:360px;width:100%;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:32px;padding:14px;box-shadow:var(--shadow)}
+  .phone-top{display:flex;align-items:center;gap:10px;padding:6px 8px 12px;border-bottom:1px solid var(--line)}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--marigold-soft);color:var(--maroon-dark);display:grid;place-items:center;font-weight:700;flex-shrink:0}
+  .phone-top small{display:block;color:var(--ink-soft);font-size:.78rem;line-height:1.3}
+  .phone-body{padding:14px 6px 6px;display:flex;flex-direction:column;gap:12px;background:var(--cream);border-radius:20px;margin-top:12px;padding:14px}
+  .bubble{max-width:88%;padding:10px 12px;border-radius:14px;font-size:.92rem;line-height:1.45;overflow-wrap:anywhere}
+  .bubble-in{background:#fff;border:1px solid var(--line);border-top-left-radius:4px;align-self:flex-start}
+  .bubble-out{background:var(--wa);color:#10291b;border-top-right-radius:4px;align-self:flex-end}
+  .bubble-label{display:block;font-size:.72rem;font-weight:700;color:var(--ink-soft);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+  .mini-verdict{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}
+  .badge-yes{background:var(--green-soft);color:var(--green)}
+  .badge-watch{background:var(--marigold-soft);color:#6B3D00}
+  .mini-verdict p{margin:8px 0 0;font-size:.92rem}
+  .sample-tag{display:inline-block;font-size:.75rem;font-weight:600;color:var(--marigold-text);background:var(--marigold-soft);padding:3px 10px;border-radius:999px;margin-bottom:10px}
+
+  /* Problem */
+  .problem{background:var(--maroon-dark);color:#FBEFE0}
+  .problem h2{color:#fff}
+  .problem .eyebrow{color:var(--marigold)}
+  .quote-block{border-left:4px solid var(--marigold);padding:4px 0 4px 18px;margin:24px 0}
+  .quote-block .hi{font-family:"Fraunces",serif;font-size:clamp(1.6rem,6vw,2.3rem);color:#fff;margin:0;font-style:italic}
+  .quote-block .gloss{color:#E9D4BE;font-size:.98rem;margin:4px 0 0}
+  .triplet{font-family:"Fraunces",serif;font-size:1.3rem;color:var(--marigold);margin:0 0 28px}
+  .problem-grid{display:grid;gap:16px}
+  .problem-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:var(--radius);padding:20px}
+  .problem-card h3{color:#fff;font-size:1.1rem}
+  .problem-card p{margin:0;color:#EBD9C6;font-size:.98rem}
+
+  /* How it works */
+  .how-grid{display:grid;gap:20px;margin-top:32px}
+  .col-title{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--marigold-text);margin:0 0 12px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;display:flex;gap:14px;margin-bottom:12px}
+  .step-num{width:34px;height:34px;border-radius:50%;background:var(--maroon);color:#fff;display:grid;place-items:center;font-weight:700;flex-shrink:0}
+  .step.out .step-num{background:var(--marigold);color:var(--ink)}
+  .step h3{font-size:1.05rem;margin-bottom:4px}
+  .step p{margin:0;font-size:.95rem;color:var(--ink-soft)}
+  .arrow{display:grid;place-items:center;color:var(--maroon);font-size:1.8rem;font-family:"Fraunces",serif}
+  .split-note{margin-top:20px;padding:14px 18px;border-radius:12px;background:var(--cream-2);font-size:.95rem;color:var(--ink-soft)}
+  .split-note strong{color:var(--ink)}
+
+  /* Demo */
+  .demo{background:var(--cream-2)}
+  .demo-grid{display:grid;gap:20px;margin-top:28px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow);min-width:0}
+  .panel h3{margin-bottom:4px}
+  .panel-note{font-size:.85rem;color:var(--ink-soft);margin-bottom:18px}
+  .field{margin-bottom:18px}
+  .field-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+  .field label,.field .label{font-weight:600;font-size:.95rem}
+  .field output{font-weight:700;color:var(--maroon);font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--maroon);height:28px;margin:0}
+  input[type=range]:disabled{opacity:1;cursor:not-allowed}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:.88rem;color:var(--ink-soft)}
+  .chip.on{background:var(--marigold-soft);border-color:var(--marigold);color:var(--ink);font-weight:600}
+  .chip .when{font-weight:700;color:var(--maroon)}
+  textarea{width:100%;min-height:96px;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font:inherit;font-size:.95rem;color:var(--ink);resize:vertical}
+  textarea:read-only{background:#FFFCF5}
+  .run-btn{width:100%;margin-top:4px}
+  .run-btn[aria-busy=true]{opacity:.8;cursor:progress}
+
+  .result-empty{min-height:280px;display:grid;place-items:center;text-align:center;color:var(--ink-soft);border:2px dashed var(--line);border-radius:16px;padding:24px}
+  .result-empty .big{font-family:"Fraunces",serif;font-size:1.3rem;color:var(--maroon-dark);display:block;margin-bottom:6px}
+  .result{display:flex;flex-direction:column;gap:14px;animation:rise .4s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .r-block{border-radius:14px;padding:14px 16px;border:1px solid var(--line);background:#fff}
+  .r-block h4{margin:0 0 6px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)}
+  .r-block p{margin:0;font-size:.98rem}
+  .r-verdict{background:var(--green-soft);border-color:#BFE2CD}
+  .r-verdict p{font-family:"Fraunces",serif;font-size:1.25rem;color:#134D31;margin-top:8px;line-height:1.3}
+  .r-watch{border-left:5px solid var(--marigold)}
+  .wa-wrap{background:#EFE7DC;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+  .wa-wrap .bubble-out{max-width:100%}
+  .copy-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .copy-status{font-size:.88rem;color:var(--green);font-weight:600}
+  .loading{display:flex;align-items:center;gap:10px;color:var(--ink-soft)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--maroon);animation:blink 1s infinite}
+  .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+
+  /* Cards */
+  .cards3{display:grid;gap:16px;margin-top:28px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .card .icon{width:44px;height:44px;border-radius:12px;background:var(--marigold-soft);display:grid;place-items:center;margin-bottom:14px;font-family:"Fraunces",serif;font-weight:700;color:var(--maroon-dark);font-size:1.2rem}
+  .card p{margin:0;color:var(--ink-soft);font-size:.97rem}
+
+  /* Trust */
+  .trust-list{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px}
+  .trust-list li{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .never{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:2px solid var(--maroon);color:var(--maroon);display:grid;place-items:center;font-weight:700;font-size:.95rem}
+  .trust-list strong{display:block;color:var(--ink)}
+  .trust-list span.sub{font-size:.93rem;color:var(--ink-soft)}
+
+  /* Who */
+  .who{background:var(--cream-2)}
+  .persona{display:grid;gap:20px;margin-top:28px}
+  .persona-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px}
+  .persona-head{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+  .persona-head .avatar{width:52px;height:52px;font-size:1.3rem;background:var(--maroon);color:#fff}
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
+  .facts div{background:var(--cream);border-radius:10px;padding:10px 12px;min-width:0}
+  .facts dt{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);font-weight:700}
+  .facts dd{margin:2px 0 0;font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+  .fit-list{padding-left:20px;margin:0}
+  .fit-list li{margin-bottom:8px}
+
+  /* Pricing */
+  .price-card{position:relative;display:flex;flex-direction:column}
+  .price-card.feature{border:2px solid var(--maroon)}
+  .price{font-family:"Fraunces",serif;font-size:2rem;color:var(--maroon-dark);margin:6px 0 2px;font-weight:700}
+  .price small{font-family:"Hanken Grotesk",sans-serif;font-size:.9rem;color:var(--ink-soft);font-weight:500}
+  .price-card ul{padding-left:18px;margin:14px 0 0;color:var(--ink-soft);font-size:.95rem}
+  .price-card li{margin-bottom:6px}
+  .planned{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--marigold-text);background:var(--marigold-soft);padding:3px 10px;border-radius:999px;align-self:flex-start}
+
+  /* FAQ */
+  .faq{max-width:760px}
+  details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+  summary{cursor:pointer;list-style:none;padding:16px 50px 16px 18px;font-weight:600;position:relative}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:1.4rem;color:var(--maroon);font-weight:500}
+  details[open] summary::after{content:"\2212"}
+  details .ans{padding:0 18px 16px;color:var(--ink-soft)}
+  details .ans p{margin:0}
+
+  /* Final CTA */
+  .final{background:var(--maroon);color:#fff;text-align:center}
+  .final h2{color:#fff;max-width:20ch;margin:0 auto 14px}
+  .final p{color:#F3DCC9}
+  .final .btn{background:var(--marigold);color:var(--ink);margin-top:10px}
+  .final .btn:hover{background:#F2B532}
+  .final :focus-visible{outline-color:#fff}
+
+  footer{padding:28px 0;font-size:.9rem;color:var(--ink-soft);border-top:1px solid var(--line)}
+  .foot{display:flex;flex-direction:column;gap:6px}
+
+  /* Larger screens */
+  @media (min-width:720px){
+    section{padding:88px 0}
+    .problem-grid,.cards3{grid-template-columns:repeat(3,1fr)}
+    .trust-list{grid-template-columns:1fr 1fr}
+    .persona{grid-template-columns:1fr 1fr}
+  }
+  @media (min-width:900px){
+    .nav-links{display:flex}
+    .hero{padding:64px 0 88px}
+    .hero-grid{grid-template-columns:1.15fr .85fr}
+    .how-grid{grid-template-columns:1fr auto 1fr}
+    .demo-grid{grid-template-columns:1fr 1fr;align-items:start}
+    .foot{flex-direction:row;justify-content:space-between}
+  }
+  @media (max-width:899px){.arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="#top" aria-label="ParivaarPlan home"><span class="logo-mark" aria-hidden="true"><span></span></span>ParivaarPlan</a>
+    <nav aria-label="Main">
+      <ul class="nav-links">
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#trust">Trust</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-primary btn-small" href="#demo">Try the Yes Check</a>
+  </div>
+  <div class="toran" aria-hidden="true"></div>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">For everyone who sends money home</span>
+      <h1>Say yes to home. <em>Know you can keep it.</em></h1>
+      <p class="lead">A yes to family can feel easy in the moment. The harder question is whether your monthly budget can keep carrying it.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#demo">Try the Yes Check</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <ul class="ticks" aria-label="Trust points">
+        <li><span class="tick" aria-hidden="true">&#10003;</span>No login</li>
+        <li><span class="tick" aria-hidden="true">&#10003;</span>No raw numbers stored</li>
+        <li><span class="tick" aria-hidden="true">&#10003;</span>No investment or loan advice</li>
+      </ul>
+    </div>
+
+    <div class="phone" role="img" aria-label="Sample Yes Check for Ankit. Home asked: can he send 25k from April. Verdict: Yes, from April 2027, if you start a wedding fund now. Watch out: December 2027. Suggested WhatsApp reply shown.">
+      <div class="phone-top" aria-hidden="true">
+        <div class="avatar">A</div>
+        <div><strong>Ankit's Yes Check</strong><small>Sample persona, not a real user</small></div>
+      </div>
+      <div class="phone-body" aria-hidden="true">
+        <div class="bubble bubble-in"><span class="bubble-label">What home asked</span>Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai.</div>
+        <div class="mini-verdict">
+          <span class="badge badge-yes">&#10003; Yes, if</span>
+          <p><strong>Yes, from April 2027,</strong> if you start a wedding fund now.</p>
+        </div>
+        <div class="mini-verdict">
+          <span class="badge badge-watch">Watch: December 2027</span>
+          <p>Wedding payments land that month and you have almost no spare cash.</p>
+        </div>
+        <div class="bubble bubble-out"><span class="bubble-label" style="color:#2f5d43">Your reply</span>Mummy, April se 25k pakka. Main abhi se Riya ki shaadi ke liye alag se bacha raha hoon, taaki December mein koi tension na ho. Bhaiya se bhi baat kar lete hain share ke liye.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem" aria-labelledby="problem-h">
+  <div class="wrap">
+    <span class="eyebrow">The problem</span>
+    <h2 id="problem-h">Every ask from home gets answered on guilt and guesswork.</h2>
+    <div class="quote-block">
+      <p class="hi" lang="hi-Latn">"Beta, ek baat thi..."</p>
+      <p class="gloss">"Beta, there's something I wanted to ask you..." A call many young professionals in metros will recognise.</p>
+    </div>
+    <p class="triplet">Papa's retirement. A sister's wedding. A medical expense.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <h3>Open-ended promises</h3>
+        <p>You moved to a metro, you send money home, and you say yes to things with no plan for the months after.</p>
+      </div>
+      <div class="problem-card">
+        <h3>Budgeting apps look back</h3>
+        <p>They track what you already spent. They can't tell you if "April se 25k" still works in December.</p>
+      </div>
+      <div class="problem-card">
+        <h3>Investment apps assume it's all yours</h3>
+        <p>Your salary is shared with home. Most money tools are built as if it isn't.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" aria-labelledby="how-h">
+  <div class="wrap">
+    <span class="eyebrow">How it works</span>
+    <h2 id="how-h">Three things in. Three answers out.</h2>
+    <p class="lead">The Yes Check gives you a plan you can actually say out loud.</p>
+    <div class="how-grid">
+      <div>
+        <p class="col-title">You tell us</p>
+        <div class="step"><span class="step-num">1</span><div><h3>Your month</h3><p>Three sliders: in-hand pay, monthly spend, and what you send home. Add a rough savings band if you like.</p></div></div>
+        <div class="step"><span class="step-num">2</span><div><h3>What's coming</h3><p>Tap family events like a retirement, wedding or medical cost, and pick the month.</p></div></div>
+        <div class="step"><span class="step-num">3</span><div><h3>What home asked for</h3><p>Type it the way it was said, in English or Hinglish.</p></div></div>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div>
+        <p class="col-title">You get</p>
+        <div class="step out"><span class="step-num">A</span><div><h3>A clear verdict</h3><p>Yes, Yes if, or Not yet. No vague scores.</p></div></div>
+        <div class="step out"><span class="step-num">B</span><div><h3>The month to watch</h3><p>When money gets tight, and the one condition that would change the answer.</p></div></div>
+        <div class="step out"><span class="step-num">C</span><div><h3>A message to send home</h3><p>A warm WhatsApp reply you can copy, edit and send.</p></div></div>
+      </div>
+    </div>
+    <p class="split-note"><strong>Code does all the maths.</strong> AI only reads the Hinglish ask and writes the message. Your numbers are never left to a guess.</p>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="demo" id="demo" aria-labelledby="demo-h">
+  <div class="wrap">
+    <span class="eyebrow">Live demo</span>
+    <h2 id="demo-h">Run Ankit's Yes Check</h2>
+    <p class="lead">Ankit is a sample persona. His inputs are filled in below. Press the button to see what the Yes Check tells him.</p>
+
+    <div class="demo-grid">
+      <form class="panel" id="yes-form" aria-labelledby="inputs-h" onsubmit="return false;">
+        <h3 id="inputs-h">Ankit's inputs</h3>
+        <p class="panel-note">Sample inputs, locked for this preview.</p>
+
+        <div class="field">
+          <div class="field-head"><label for="pay">In-hand pay / month</label><output id="pay-out" for="pay">Rs 1,00,000</output></div>
+          <input type="range" id="pay" name="pay" min="20000" max="300000" step="1000" value="100000" disabled>
+        </div>
+        <div class="field">
+          <div class="field-head"><label for="spend">Monthly spend</label><output id="spend-out" for="spend">Rs 52,000</output></div>
+          <input type="range" id="spend" name="spend" min="10000" max="200000" step="1000" value="52000" disabled>
+        </div>
+        <div class="field">
+          <div class="field-head"><label for="sent">Sent home / month</label><output id="sent-out" for="sent">Rs 15,000</output></div>
+          <input type="range" id="sent" name="sent" min="0" max="100000" step="500" value="15000" disabled>
+        </div>
+
+        <div class="field" role="group" aria-labelledby="sav-l">
+          <div class="field-head"><span class="label" id="sav-l">Savings band (optional)</span></div>
+          <div class="chips" id="savings">
+            <span class="chip" data-band="under-1L">Under Rs 1L</span>
+            <span class="chip" data-band="1-3L">Rs 1 to 3L</span>
+            <span class="chip on" data-band="3-5L" aria-current="true">Rs 3 to 5L</span>
+            <span class="chip" data-band="5L-plus">Rs 5L+</span>
+          </div>
+        </div>
+
+        <div class="field" role="group" aria-labelledby="ev-l">
+          <div class="field-head"><span class="label" id="ev-l">Family events</span><span style="font-size:.85rem;color:var(--ink-soft)">2 contributors</span></div>
+          <div class="chips" id="events">
+            <span class="chip on" data-event="retirement" data-month="2027-04">Papa retires <span class="when">Apr 2027</span></span>
+            <span class="chip on" data-event="wedding" data-month="2027-12">Riya's wedding <span class="when">Dec 2027</span></span>
+            <span class="chip">Medical</span>
+            <span class="chip">Education</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ask">What did home ask for?</label>
+          <textarea id="ask" name="ask" readonly lang="hi-Latn" style="margin-top:6px">Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai.</textarea>
+        </div>
+
+        <button type="button" class="btn btn-primary run-btn" id="run-btn">Run Ankit's Yes Check</button>
+      </form>
+
+      <div class="panel" aria-labelledby="result-h">
+        <h3 id="result-h">The result</h3>
+        <p class="panel-note">Sample result for Ankit. Not financial advice.</p>
+        <div id="result-area" aria-live="polite" aria-atomic="true">
+          <div class="result-empty">
+            <div><span class="big">Ready when you are</span>Press "Run Ankit's Yes Check" to see his verdict, the month to watch and a message for home.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY NOT A CALCULATOR -->
+<section id="why" aria-labelledby="why-h">
+  <div class="wrap">
+    <span class="eyebrow">Why it's different</span>
+    <h2 id="why-h">Why it's not just a calculator</h2>
+    <div class="cards3">
+      <div class="card">
+        <div class="icon" aria-hidden="true">Hi</div>
+        <h3>It reads the ask the way it was said</h3>
+        <p>"April se 25k bhej sakte ho?" goes in as typed. You don't have to turn a phone call into a spreadsheet.</p>
+      </div>
+      <div class="card">
+        <div class="icon" aria-hidden="true">Dec</div>
+        <h3>It looks at months, not totals</h3>
+        <p>A yes that works in April can break in December. The Yes Check finds the month it gets tight and the one thing that would fix it.</p>
+      </div>
+      <div class="card">
+        <div class="icon" aria-hidden="true">&#8220;</div>
+        <h3>It gives you words, not just numbers</h3>
+        <p>The hardest part is the conversation. You get a warm message for home that you can copy straight into WhatsApp.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section id="trust" aria-labelledby="trust-h" style="padding-top:0">
+  <div class="wrap">
+    <span class="eyebrow">Trust</span>
+    <h2 id="trust-h">Four things we never do</h2>
+    <p class="lead">No login. No raw numbers stored. No investment or loan advice.</p>
+    <ul class="trust-list">
+      <li><span class="never" aria-hidden="true">&#10005;</span><div><strong>We never ask you to log in</strong><span class="sub">Open the page, run the Yes Check, done.</span></div></li>
+      <li><span class="never" aria-hidden="true">&#10005;</span><div><strong>We never store your raw salary or savings</strong><span class="sub">Your exact figures are used for the check and not kept.</span></div></li>
+      <li><span class="never" aria-hidden="true">&#10005;</span><div><strong>We never give investment, loan, insurance, tax or legal advice</strong><span class="sub">We help you plan what you can keep up. Nothing more.</span></div></li>
+      <li><span class="never" aria-hidden="true">&#10005;</span><div><strong>We never tell you how much you should give</strong><span class="sub">That's between you and your family. We only show what your budget can carry.</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="who" id="who" aria-labelledby="who-h">
+  <div class="wrap">
+    <span class="eyebrow">Who it's for</span>
+    <h2 id="who-h">Built for people like Ankit</h2>
+    <div class="persona">
+      <div class="persona-card">
+        <span class="sample-tag">Sample persona, not a customer</span>
+        <div class="persona-head">
+          <div class="avatar" aria-hidden="true">A</div>
+          <div><h3 style="margin:0">Ankit, 26</h3><span style="color:var(--ink-soft);font-size:.95rem">From Kanpur. Software engineer in Bengaluru.</span></div>
+        </div>
+        <dl class="facts">
+          <div><dt>In hand</dt><dd>Rs 1,00,000</dd></div>
+          <div><dt>Spends</dt><dd>Rs 52,000</dd></div>
+          <div><dt>Sends home</dt><dd>Rs 15,000</dd></div>
+          <div><dt>Savings</dt><dd>Rs 3 to 5 lakh</dd></div>
+          <div><dt>Papa retires</dt><dd>April 2027</dd></div>
+          <div><dt>Riya's wedding</dt><dd>December 2027</dd></div>
+        </dl>
+      </div>
+      <div class="persona-card">
+        <h3>You'll find it useful if you</h3>
+        <ul class="fit-list">
+          <li>Moved to a metro for work and send money home every month</li>
+          <li>Have a big family event coming: a retirement, a wedding, a medical cost</li>
+          <li>Share the load with a sibling and need to talk about who covers what</li>
+          <li>Want to say yes to home without quietly running out by year end</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" aria-labelledby="pricing-h">
+  <div class="wrap">
+    <span class="eyebrow">Planned pricing</span>
+    <h2 id="pricing-h">Start free. Pay only if the family plans together.</h2>
+    <p class="lead">These prices are planned. Nothing is on sale yet.</p>
+    <div class="cards3">
+      <div class="card price-card feature">
+        <span class="planned">Planned</span>
+        <h3 style="margin-top:12px">Yes Check</h3>
+        <p class="price">Free</p>
+        <ul><li>Verdict, month to watch and one condition</li><li>WhatsApp message in English or Hinglish</li><li>No login</li></ul>
+      </div>
+      <div class="card price-card">
+        <span class="planned">Planned</span>
+        <h3 style="margin-top:12px">Family Room</h3>
+        <p class="price">Rs 149 <small>/ month</small></p>
+        <p style="margin:0;font-size:.92rem">or Rs 999 / year</p>
+        <ul><li>Plan shared costs with siblings</li><li>See who covers what, month by month</li></ul>
+      </div>
+      <div class="card price-card">
+        <span class="planned">Planned</span>
+        <h3 style="margin-top:12px">Event Plan</h3>
+        <p class="price">Rs 199 <small>one-time</small></p>
+        <ul><li>A month-by-month plan for one big event</li><li>Built for a wedding, retirement or medical cost</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-h" style="padding-top:0">
+  <div class="wrap faq">
+    <span class="eyebrow">FAQ</span>
+    <h2 id="faq-h">Questions you might have</h2>
+    <details><summary>Do you store my salary or savings?</summary><div class="ans"><p>No. There's no login, and your raw salary and savings figures are not stored. Savings is optional and only asked as a rough band.</p></div></details>
+    <details><summary>Will it tell me how much I should give my family?</summary><div class="ans"><p>Never. That's your call. The Yes Check only shows whether a specific ask fits your budget over the coming months.</p></div></details>
+    <details><summary>Is this financial advice?</summary><div class="ans"><p>No. ParivaarPlan does not give investment, loan, insurance, tax or legal advice. It's a planning aid for family money conversations.</p></div></details>
+    <details><summary>Can I type the ask in Hinglish?</summary><div class="ans"><p>Yes. Type it the way it was said, in English or Hinglish. The message for home can come back in the same style.</p></div></details>
+    <details><summary>Is the AI doing the maths?</summary><div class="ans"><p>No. Plain code does all the calculations. AI only reads what home asked for and writes the WhatsApp message.</p></div></details>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final" aria-labelledby="final-h">
+  <div class="wrap">
+    <h2 id="final-h">Before you say yes to home, know what you can keep up.</h2>
+    <p>No login. A plan and a message you can send tonight.</p>
+    <a class="btn" href="#demo">Try the Yes Check</a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span><strong style="color:var(--maroon-dark)">ParivaarPlan</strong></span>
+    <span>Built as part of a GenAI course at ISB. Not financial advice.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var fmt = function(n){ return "Rs " + Number(n).toLocaleString("en-IN"); };
+
+  // Keep slider labels in sync (useful once sliders are unlocked in Task 4)
+  ["pay","spend","sent"].forEach(function(id){
+    var input = document.getElementById(id);
+    var out = document.getElementById(id + "-out");
+    var sync = function(){ out.textContent = fmt(input.value); };
+    input.addEventListener("input", sync);
+    sync();
+  });
+
+  // Ankit's fixed sample result (used until Task 4 wires the live API)
+  var SAMPLE_RESULT = {
+    verdictType: "yes_if",
+    verdictLabel: "Yes, if",
+    verdict: "Yes, from April 2027, if you start a wedding fund now.",
+    plan: "Put aside Rs 33,000 a month until March, then Rs 17,600 a month once you're sending Rs 25,000. You keep about Rs 5,400 a month spare, plus Rs 1.5 lakh as your emergency cushion.",
+    watchOut: "December 2027. Wedding payments land that month and you have almost no spare cash. If the wedding goes past Rs 10 lakh (rough estimate), Rs 25,000 stops working. Talk to Bhaiya before then.",
+    message: "Mummy, April se 25k pakka. Main abhi se Riya ki shaadi ke liye alag se bacha raha hoon, taaki December mein koi tension na ho. Bhaiya se bhi baat kar lete hain share ke liye."
+  };
+
+  // Collects the form into the payload shape the API will receive
+  function collectInputs(){
+    var band = document.querySelector("#savings .chip.on");
+    var events = Array.prototype.map.call(
+      document.querySelectorAll("#events .chip.on[data-event]"),
+      function(c){ return { type: c.dataset.event, month: c.dataset.month }; }
+    );
+    return {
+      inHandPay: Number(document.getElementById("pay").value),
+      monthlySpend: Number(document.getElementById("spend").value),
+      sentHome: Number(document.getElementById("sent").value),
+      savingsBand: band ? band.dataset.band : null,
+      events: events,
+      contributors: 2,
+      ask: document.getElementById("ask").value.trim()
+    };
+  }
+
+  var area = document.getElementById("result-area");
+  var btn = document.getElementById("run-btn");
+
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // textContent keeps AI output safe
+    return e;
+  }
+
+  function block(cls, heading, body){
+    var b = el("div", "r-block " + cls);
+    b.appendChild(el("h4", null, heading));
+    b.appendChild(el("p", null, body));
+    return b;
+  }
+
+  function renderResult(r){
+    area.innerHTML = "";
+    var wrap = el("div", "result");
+
+    var v = el("div", "r-block r-verdict");
+    v.appendChild(el("h4", null, "Verdict"));
+    v.appendChild(el("span", "badge badge-yes", "\u2713 " + r.verdictLabel));
+    v.appendChild(el("p", null, r.verdict));
+    wrap.appendChild(v);
+
+    wrap.appendChild(block("", "Plan", r.plan));
+    wrap.appendChild(block("r-watch", "Watch out", r.watchOut));
+
+    var wa = el("div", "wa-wrap");
+    wa.appendChild(el("h4", null, "Message for home")).style.cssText = "margin:0;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)";
+    var bubble = el("div", "bubble bubble-out", r.message);
+    bubble.setAttribute("lang", "hi-Latn");
+    wa.appendChild(bubble);
+
+    var row = el("div", "copy-row");
+    var copyBtn = el("button", "btn btn-primary btn-small", "Copy message");
+    copyBtn.type = "button";
+    var status = el("span", "copy-status");
+    status.setAttribute("role", "status");
+    copyBtn.addEventListener("click", function(){ copyText(r.message, status); });
+    row.appendChild(copyBtn);
+    row.appendChild(status);
+    wa.appendChild(row);
+
+    wrap.appendChild(wa);
+    area.appendChild(wrap);
+  }
+
+  function copyText(text, status){
+    var done = function(){ status.textContent = "Copied. Paste it in WhatsApp."; setTimeout(function(){ status.textContent = ""; }, 3000); };
+    if (navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text) ? done() : (status.textContent = "Couldn't copy. Select the text instead."); });
+    } else {
+      fallbackCopy(text) ? done() : (status.textContent = "Couldn't copy. Select the text instead.");
+    }
+  }
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand("copy"); } catch(e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function showLoading(){
+    area.innerHTML = '<div class="result-empty"><div class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span>Running the Yes Check...</span></div></div>';
+  }
+
+  async function runYesCheck(){
+    btn.setAttribute("aria-busy", "true");
+    btn.disabled = true;
+    btn.textContent = "Checking...";
+    showLoading();
+
+    var payload = collectInputs();
+    var result;
+
+    try {
+      /* ============================================================
+         TASK 4: LIVE AI FEATURE GOES HERE
+         Replace the sample block below with a call to the Vercel
+         serverless function, which runs the maths in code, sends only
+         the ask text to Gemini, and logs anonymised bands to Supabase:
+
+         const res = await fetch("/api/yes-check", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify(payload)
+         });
+         if (!res.ok) throw new Error("Yes Check failed");
+         result = await res.json();
+         // expected shape: { verdictType, verdictLabel, verdict,
+         //                   plan, watchOut, message }
+         ============================================================ */
+      await new Promise(function(r){ setTimeout(r, 700); });
+      result = SAMPLE_RESULT;
+      void payload; // payload is ready for the API call above
+
+      renderResult(result);
+    } catch (err) {
+      area.innerHTML = "";
+      area.appendChild(el("div", "result-empty", "Something went wrong. Please try again."));
+    } finally {
+      btn.removeAttribute("aria-busy");
+      btn.disabled = false;
+      btn.textContent = "Run it again";
+    }
+  }
+
+  btn.addEventListener("click", runYesCheck);
+})();
+</script>
+</body>
+</html>
