@@ -7,7 +7,7 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: "Server is missing Supabase settings." });
   }
   try {
-    res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=60");
+    res.setHeader("Cache-Control", "no-store"); // always fresh, so the count updates right after a check
     return res.status(200).json(await readStats());
   } catch (e) {
     console.error(e);
