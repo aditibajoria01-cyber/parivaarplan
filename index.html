@@ -158,6 +158,22 @@
   .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
   @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
 
+  /* Live demo inputs */
+  .panel-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .link-btn{background:none;border:0;padding:6px 0;font:600 .9rem "Hanken Grotesk",sans-serif;color:var(--maroon);text-decoration:underline;cursor:pointer}
+  button.chip{cursor:pointer;font-family:inherit}
+  .group{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px 14px;margin:0 0 18px;min-width:0}
+  .group legend{font-weight:600;font-size:.95rem;padding:0 6px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row2>div{min-width:0}
+  .small-l{display:block;font-size:.82rem;font-weight:600;color:var(--ink-soft);margin-bottom:4px}
+  select,input[type=number]{width:100%;min-height:44px;padding:9px 10px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font:inherit;font-size:.95rem;color:var(--ink)}
+  select:disabled,input:disabled{opacity:.55}
+  .r-verdict.notyet{background:var(--marigold-soft);border-color:#EBC76A}
+  .r-verdict.notyet p{color:#5C3300}
+  .r-refused{border-left:5px solid var(--maroon)}
+  .stats-line{margin:22px 0 0;text-align:center;font-weight:600;color:var(--maroon-dark);min-height:1.6em}
+
   /* Cards */
   .cards3{display:grid;gap:16px;margin-top:28px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
@@ -349,65 +365,82 @@
 <section class="demo" id="demo" aria-labelledby="demo-h">
   <div class="wrap">
     <span class="eyebrow">Live demo</span>
-    <h2 id="demo-h">Run Ankit's Yes Check</h2>
-    <p class="lead">Ankit is a sample persona. His inputs are filled in below. Press the button to see what the Yes Check tells him.</p>
+    <h2 id="demo-h">Run your own Yes Check</h2>
+    <p class="lead">Ankit's sample numbers are filled in to start. Change anything to match your own month, then run it. Your exact figures are used for this check and not stored.</p>
 
     <div class="demo-grid">
-      <form class="panel" id="yes-form" aria-labelledby="inputs-h" onsubmit="return false;">
-        <h3 id="inputs-h">Ankit's inputs</h3>
-        <p class="panel-note">Sample inputs, locked for this preview.</p>
+      <form class="panel" id="yes-form" aria-labelledby="inputs-h" novalidate>
+        <div class="panel-top">
+          <h3 id="inputs-h">Your month</h3>
+          <button type="button" class="link-btn" id="fill-ankit">Use Ankit's example</button>
+        </div>
+        <p class="panel-note">Ankit is a sample persona, not a real user.</p>
 
         <div class="field">
           <div class="field-head"><label for="pay">In-hand pay / month</label><output id="pay-out" for="pay">Rs 1,00,000</output></div>
-          <input type="range" id="pay" name="pay" min="20000" max="300000" step="1000" value="100000" disabled>
+          <input type="range" id="pay" name="pay" min="20000" max="300000" step="1000" value="100000">
         </div>
         <div class="field">
           <div class="field-head"><label for="spend">Monthly spend</label><output id="spend-out" for="spend">Rs 52,000</output></div>
-          <input type="range" id="spend" name="spend" min="10000" max="200000" step="1000" value="52000" disabled>
+          <input type="range" id="spend" name="spend" min="10000" max="200000" step="1000" value="52000">
         </div>
         <div class="field">
           <div class="field-head"><label for="sent">Sent home / month</label><output id="sent-out" for="sent">Rs 15,000</output></div>
-          <input type="range" id="sent" name="sent" min="0" max="100000" step="500" value="15000" disabled>
-        </div>
-
-        <div class="field" role="group" aria-labelledby="sav-l">
-          <div class="field-head"><span class="label" id="sav-l">Savings band (optional)</span></div>
-          <div class="chips" id="savings">
-            <span class="chip" data-band="under-1L">Under Rs 1L</span>
-            <span class="chip" data-band="1-3L">Rs 1 to 3L</span>
-            <span class="chip on" data-band="3-5L" aria-current="true">Rs 3 to 5L</span>
-            <span class="chip" data-band="5L-plus">Rs 5L+</span>
-          </div>
-        </div>
-
-        <div class="field" role="group" aria-labelledby="ev-l">
-          <div class="field-head"><span class="label" id="ev-l">Family events</span><span style="font-size:.85rem;color:var(--ink-soft)">2 contributors</span></div>
-          <div class="chips" id="events">
-            <span class="chip on" data-event="retirement" data-month="2027-04">Papa retires <span class="when">Apr 2027</span></span>
-            <span class="chip on" data-event="wedding" data-month="2027-12">Riya's wedding <span class="when">Dec 2027</span></span>
-            <span class="chip">Medical</span>
-            <span class="chip">Education</span>
-          </div>
+          <input type="range" id="sent" name="sent" min="0" max="100000" step="500" value="15000">
         </div>
 
         <div class="field">
-          <label for="ask">What did home ask for?</label>
-          <textarea id="ask" name="ask" readonly lang="hi-Latn" style="margin-top:6px">Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai.</textarea>
+          <div class="field-head"><span class="label" id="sav-l">Savings band (optional)</span></div>
+          <div class="chips" id="savings" role="radiogroup" aria-labelledby="sav-l">
+            <button type="button" class="chip" role="radio" aria-checked="false" data-band="under-1L">Under Rs 1L</button>
+            <button type="button" class="chip" role="radio" aria-checked="false" data-band="1-3L">Rs 1 to 3L</button>
+            <button type="button" class="chip on" role="radio" aria-checked="true" data-band="3-5L">Rs 3 to 5L</button>
+            <button type="button" class="chip" role="radio" aria-checked="false" data-band="5L-plus">Rs 5L+</button>
+          </div>
         </div>
 
-        <button type="button" class="btn btn-primary run-btn" id="run-btn">Run Ankit's Yes Check</button>
+        <fieldset class="group">
+          <legend>Biggest family cost coming up</legend>
+          <div class="row2">
+            <div><label class="small-l" for="ev-type">What</label>
+              <select id="ev-type">
+                <option value="">None</option>
+                <option value="wedding" selected>Wedding</option>
+                <option value="medical">Medical</option>
+                <option value="education">Education</option>
+                <option value="other">Other</option>
+              </select></div>
+            <div><label class="small-l" for="ev-month">When</label><select id="ev-month"></select></div>
+            <div><label class="small-l" for="ev-cost">Rough total cost (estimate, Rs)</label><input type="number" id="ev-cost" inputmode="numeric" min="1000" step="1000" value="1000000"></div>
+            <div><label class="small-l" for="ev-people">People sharing it</label>
+              <select id="ev-people"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></div>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>What home asked for</legend>
+          <div class="row2">
+            <div><label class="small-l" for="ask-amt">New monthly total (Rs)</label><input type="number" id="ask-amt" inputmode="numeric" min="500" step="500" value="25000"></div>
+            <div><label class="small-l" for="ask-start">From</label><select id="ask-start"></select></div>
+          </div>
+          <label class="small-l" for="ask" style="margin-top:12px">In their words (English or Hinglish)</label>
+          <textarea id="ask" name="ask" maxlength="500" lang="hi-Latn">Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai.</textarea>
+        </fieldset>
+
+        <button type="submit" class="btn btn-primary run-btn" id="run-btn">Run the Yes Check</button>
       </form>
 
       <div class="panel" aria-labelledby="result-h">
         <h3 id="result-h">The result</h3>
-        <p class="panel-note">Sample result for Ankit. Not financial advice.</p>
+        <p class="panel-note">Not financial advice. Family costs are rough estimates.</p>
         <div id="result-area" aria-live="polite" aria-atomic="true">
           <div class="result-empty">
-            <div><span class="big">Ready when you are</span>Press "Run Ankit's Yes Check" to see his verdict, the month to watch and a message for home.</div>
+            <div><span class="big">Ready when you are</span>Press "Run the Yes Check" to see the verdict, the month to watch and a message for home.</div>
           </div>
         </div>
       </div>
     </div>
+    <p class="stats-line" id="stats" aria-live="polite"></p>
   </div>
 </section>
 
@@ -549,46 +582,96 @@
 <script>
 (function(){
   var fmt = function(n){ return "Rs " + Number(n).toLocaleString("en-IN"); };
+  var $ = function(id){ return document.getElementById(id); };
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-  // Keep slider labels in sync (useful once sliders are unlocked in Task 4)
+  // Slider labels
   ["pay","spend","sent"].forEach(function(id){
-    var input = document.getElementById(id);
-    var out = document.getElementById(id + "-out");
+    var input = $(id), out = $(id + "-out");
     var sync = function(){ out.textContent = fmt(input.value); };
-    input.addEventListener("input", sync);
-    sync();
+    input.addEventListener("input", sync); sync();
   });
 
-  // Ankit's fixed sample result (used until Task 4 wires the live API)
-  var SAMPLE_RESULT = {
-    verdictType: "yes_if",
-    verdictLabel: "Yes, if",
-    verdict: "Yes, from April 2027, if you start a wedding fund now.",
-    plan: "Put aside Rs 33,000 a month until March, then Rs 17,600 a month once you're sending Rs 25,000. You keep about Rs 5,400 a month spare, plus Rs 1.5 lakh as your emergency cushion.",
-    watchOut: "December 2027. Wedding payments land that month and you have almost no spare cash. If the wedding goes past Rs 10 lakh (rough estimate), Rs 25,000 stops working. Talk to Bhaiya before then.",
-    message: "Mummy, April se 25k pakka. Main abhi se Riya ki shaadi ke liye alag se bacha raha hoon, taaki December mein koi tension na ho. Bhaiya se bhi baat kar lete hain share ke liye."
-  };
+  // Month dropdowns: this month plus the next 47
+  function fillMonths(sel){
+    var d = new Date(), base = d.getFullYear() * 12 + d.getMonth();
+    sel.innerHTML = "";
+    for (var k = 0; k < 48; k++){
+      var i = base + k, y = Math.floor(i / 12), m = i % 12;
+      var o = document.createElement("option");
+      o.value = y + "-" + String(m + 1).padStart(2, "0");
+      o.textContent = MONTHS[m].slice(0, 3) + " " + y;
+      sel.appendChild(o);
+    }
+  }
+  function setMonth(sel, value){
+    var has = Array.prototype.some.call(sel.options, function(o){ return o.value === value; });
+    sel.value = has ? value : sel.options[0].value; // if the date has passed, fall back to this month
+  }
+  fillMonths($("ev-month")); fillMonths($("ask-start"));
 
-  // Collects the form into the payload shape the API will receive
+  // Savings band chips
+  var chips = document.querySelectorAll("#savings .chip");
+  function pickBand(band){
+    chips.forEach(function(c){
+      var on = c.dataset.band === band;
+      c.classList.toggle("on", on); c.setAttribute("aria-checked", on ? "true" : "false");
+    });
+  }
+  chips.forEach(function(c){
+    c.addEventListener("click", function(){ pickBand(c.classList.contains("on") ? null : c.dataset.band); });
+  });
+
+  // Family cost fields switch off when "None" is picked
+  function syncEvent(){
+    var none = !$("ev-type").value;
+    ["ev-month","ev-cost","ev-people"].forEach(function(id){ $(id).disabled = none; });
+  }
+  $("ev-type").addEventListener("change", syncEvent);
+
+  // Ankit's sample inputs
+  var ANKIT = { pay:100000, spend:52000, sent:15000, band:"3-5L", evType:"wedding", evMonth:"2027-12", evCost:1000000, evPeople:"2",
+    askAmt:25000, askStart:"2027-04", ask:"Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai." };
+  function fillAnkit(){
+    ["pay","spend","sent"].forEach(function(id){ $(id).value = ANKIT[id]; $(id).dispatchEvent(new Event("input")); });
+    pickBand(ANKIT.band);
+    $("ev-type").value = ANKIT.evType; setMonth($("ev-month"), ANKIT.evMonth);
+    $("ev-cost").value = ANKIT.evCost; $("ev-people").value = ANKIT.evPeople;
+    $("ask-amt").value = ANKIT.askAmt; setMonth($("ask-start"), ANKIT.askStart);
+    $("ask").value = ANKIT.ask; syncEvent();
+  }
+  $("fill-ankit").addEventListener("click", fillAnkit);
+  fillAnkit();
+
+  // Anonymous visitor id, used only for the 5-a-day cap
+  function visitorId(){
+    var id = null;
+    try { id = localStorage.getItem("pp_visitor"); } catch(e) {}
+    if (!id){
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(36).slice(2, 10);
+      try { localStorage.setItem("pp_visitor", id); } catch(e) {}
+    }
+    return id;
+  }
+  var VISITOR = visitorId();
+
   function collectInputs(){
     var band = document.querySelector("#savings .chip.on");
-    var events = Array.prototype.map.call(
-      document.querySelectorAll("#events .chip.on[data-event]"),
-      function(c){ return { type: c.dataset.event, month: c.dataset.month }; }
-    );
+    var evType = $("ev-type").value;
     return {
-      inHandPay: Number(document.getElementById("pay").value),
-      monthlySpend: Number(document.getElementById("spend").value),
-      sentHome: Number(document.getElementById("sent").value),
+      inHandPay: Number($("pay").value),
+      monthlySpend: Number($("spend").value),
+      sentHome: Number($("sent").value),
       savingsBand: band ? band.dataset.band : null,
-      events: events,
-      contributors: 2,
-      ask: document.getElementById("ask").value.trim()
+      event: evType ? { type: evType, month: $("ev-month").value, cost: Number($("ev-cost").value), people: Number($("ev-people").value) } : null,
+      askAmount: Number($("ask-amt").value),
+      askStartMonth: $("ask-start").value,
+      askText: $("ask").value.trim(),
+      visitorId: VISITOR
     };
   }
 
-  var area = document.getElementById("result-area");
-  var btn = document.getElementById("run-btn");
+  var area = $("result-area"), btn = $("run-btn");
 
   function el(tag, cls, text){
     var e = document.createElement(tag);
@@ -596,112 +679,108 @@
     if (text != null) e.textContent = text; // textContent keeps AI output safe
     return e;
   }
-
   function block(cls, heading, body){
     var b = el("div", "r-block " + cls);
-    b.appendChild(el("h4", null, heading));
-    b.appendChild(el("p", null, body));
+    b.appendChild(el("h4", null, heading)); b.appendChild(el("p", null, body));
     return b;
+  }
+  function note(text){
+    area.innerHTML = "";
+    area.appendChild(el("div", "result-empty", text));
+  }
+
+  function messageBlock(message){
+    var wa = el("div", "wa-wrap");
+    var h = el("h4", null, "Message for home");
+    h.style.cssText = "margin:0;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)";
+    wa.appendChild(h);
+    var bubble = el("div", "bubble bubble-out", message);
+    bubble.setAttribute("lang", "hi-Latn");
+    wa.appendChild(bubble);
+    var row = el("div", "copy-row");
+    var copyBtn = el("button", "btn btn-primary btn-small", "Copy message");
+    copyBtn.type = "button";
+    var status = el("span", "copy-status"); status.setAttribute("role", "status");
+    copyBtn.addEventListener("click", function(){ copyText(message, status); });
+    row.appendChild(copyBtn); row.appendChild(status); wa.appendChild(row);
+    return wa;
   }
 
   function renderResult(r){
     area.innerHTML = "";
     var wrap = el("div", "result");
-
-    var v = el("div", "r-block r-verdict");
+    if (r.refused){
+      wrap.appendChild(block("r-refused", "Can't help with that", r.message));
+      area.appendChild(wrap); return;
+    }
+    var notYet = r.verdictType === "not_yet";
+    var v = el("div", "r-block r-verdict" + (notYet ? " notyet" : ""));
     v.appendChild(el("h4", null, "Verdict"));
-    v.appendChild(el("span", "badge badge-yes", "\u2713 " + r.verdictLabel));
+    v.appendChild(el("span", "badge " + (notYet ? "badge-watch" : "badge-yes"), (notYet ? "" : "✓ ") + r.verdictLabel));
     v.appendChild(el("p", null, r.verdict));
     wrap.appendChild(v);
-
     wrap.appendChild(block("", "Plan", r.plan));
     wrap.appendChild(block("r-watch", "Watch out", r.watchOut));
-
-    var wa = el("div", "wa-wrap");
-    wa.appendChild(el("h4", null, "Message for home")).style.cssText = "margin:0;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft)";
-    var bubble = el("div", "bubble bubble-out", r.message);
-    bubble.setAttribute("lang", "hi-Latn");
-    wa.appendChild(bubble);
-
-    var row = el("div", "copy-row");
-    var copyBtn = el("button", "btn btn-primary btn-small", "Copy message");
-    copyBtn.type = "button";
-    var status = el("span", "copy-status");
-    status.setAttribute("role", "status");
-    copyBtn.addEventListener("click", function(){ copyText(r.message, status); });
-    row.appendChild(copyBtn);
-    row.appendChild(status);
-    wa.appendChild(row);
-
-    wrap.appendChild(wa);
+    wrap.appendChild(messageBlock(r.message));
     area.appendChild(wrap);
   }
 
   function copyText(text, status){
     var done = function(){ status.textContent = "Copied. Paste it in WhatsApp."; setTimeout(function(){ status.textContent = ""; }, 3000); };
+    var fail = function(){ status.textContent = "Couldn't copy. Select the text instead."; };
     if (navigator.clipboard && window.isSecureContext){
-      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text) ? done() : (status.textContent = "Couldn't copy. Select the text instead."); });
-    } else {
-      fallbackCopy(text) ? done() : (status.textContent = "Couldn't copy. Select the text instead.");
-    }
+      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text) ? done() : fail(); });
+    } else { fallbackCopy(text) ? done() : fail(); }
   }
-
   function fallbackCopy(text){
     var ta = document.createElement("textarea");
-    ta.value = text; ta.setAttribute("readonly", "");
-    ta.style.position = "fixed"; ta.style.opacity = "0";
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
     document.body.appendChild(ta); ta.select();
     var ok = false; try { ok = document.execCommand("copy"); } catch(e) {}
-    document.body.removeChild(ta);
-    return ok;
+    document.body.removeChild(ta); return ok;
   }
 
-  function showLoading(){
-    area.innerHTML = '<div class="result-empty"><div class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span>Running the Yes Check...</span></div></div>';
+  // Read-back from Supabase (through /api/stats, so no key in the page)
+  function showStats(s){
+    if (!s || typeof s.total !== "number") return;
+    var line = s.total === 0 ? "Be the first to run a Yes Check."
+      : s.total.toLocaleString("en-IN") + " Yes Check" + (s.total === 1 ? "" : "s") + " run so far" +
+        (s.yesShare != null ? ". " + s.yesShare + "% came back Yes or Yes, if." : ".");
+    $("stats").textContent = line;
   }
+  function loadStats(){
+    fetch("/api/stats").then(function(r){ return r.ok ? r.json() : null; }).then(showStats).catch(function(){});
+  }
+  loadStats();
 
-  async function runYesCheck(){
-    btn.setAttribute("aria-busy", "true");
-    btn.disabled = true;
-    btn.textContent = "Checking...";
-    showLoading();
-
+  async function runYesCheck(e){
+    if (e) e.preventDefault();
     var payload = collectInputs();
-    var result;
+    if (!payload.askText){ note("Please type what your family asked for."); $("ask").focus(); return; }
+    if (!(payload.askAmount > 0)){ note("Please enter the amount asked per month."); $("ask-amt").focus(); return; }
+
+    btn.setAttribute("aria-busy", "true"); btn.disabled = true; btn.textContent = "Checking...";
+    area.innerHTML = '<div class="result-empty"><div class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span>Running the Yes Check...</span></div></div>';
 
     try {
-      /* ============================================================
-         TASK 4: LIVE AI FEATURE GOES HERE
-         Replace the sample block below with a call to the Vercel
-         serverless function, which runs the maths in code, sends only
-         the ask text to Gemini, and logs anonymised bands to Supabase:
-
-         const res = await fetch("/api/yes-check", {
-           method: "POST",
-           headers: { "Content-Type": "application/json" },
-           body: JSON.stringify(payload)
-         });
-         if (!res.ok) throw new Error("Yes Check failed");
-         result = await res.json();
-         // expected shape: { verdictType, verdictLabel, verdict,
-         //                   plan, watchOut, message }
-         ============================================================ */
-      await new Promise(function(r){ setTimeout(r, 700); });
-      result = SAMPLE_RESULT;
-      void payload; // payload is ready for the API call above
-
-      renderResult(result);
+      // Live call to the Vercel serverless function (api/yes-check.js)
+      var res = await fetch("/api/yes-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      var data = await res.json().catch(function(){ return {}; });
+      if (!res.ok){ note(data.error || "Something went wrong. Please try again."); return; }
+      renderResult(data);
+      showStats(data.stats);
     } catch (err) {
-      area.innerHTML = "";
-      area.appendChild(el("div", "result-empty", "Something went wrong. Please try again."));
+      note("Couldn't reach the Yes Check. Check your connection and try again.");
     } finally {
-      btn.removeAttribute("aria-busy");
-      btn.disabled = false;
-      btn.textContent = "Run it again";
+      btn.removeAttribute("aria-busy"); btn.disabled = false; btn.textContent = "Run it again";
     }
   }
 
-  btn.addEventListener("click", runYesCheck);
+  $("yes-form").addEventListener("submit", runYesCheck);
 })();
 </script>
 </body>
