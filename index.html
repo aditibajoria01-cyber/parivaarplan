@@ -172,6 +172,9 @@
   .r-verdict.notyet{background:var(--marigold-soft);border-color:#EBC76A}
   .r-verdict.notyet p{color:#5C3300}
   .r-refused{border-left:5px solid var(--maroon)}
+  .synced{animation:synced 1.6s ease}
+  @keyframes synced{0%,40%{box-shadow:0 0 0 3px var(--marigold);background:var(--marigold-soft)}100%{box-shadow:none}}
+  .sync-note{font-size:.82rem;color:var(--ink-soft);margin:6px 0 0;min-height:1.2em}
   .stats-line{margin:22px 0 0;text-align:center;font-weight:600;color:var(--maroon-dark);min-height:1.6em}
 
   /* Cards */
@@ -424,7 +427,8 @@
             <div><label class="small-l" for="ask-start">From</label><select id="ask-start"></select></div>
           </div>
           <label class="small-l" for="ask" style="margin-top:12px">In their words (English or Hinglish)</label>
-          <textarea id="ask" name="ask" maxlength="500" lang="hi-Latn">Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai.</textarea>
+          <textarea id="ask" name="ask" maxlength="500" lang="hi-Latn" aria-describedby="sync-note">Mummy keh rahi hai papa retire ho rahe hain, April se 25k bhej sakte ho? Riya ki shaadi bhi hai.</textarea>
+          <p class="sync-note" id="sync-note" aria-live="polite"></p>
         </fieldset>
 
         <button type="submit" class="btn btn-primary run-btn" id="run-btn">Run the Yes Check</button>
@@ -754,7 +758,7 @@
     $("stats").textContent = line;
   }
   function loadStats(){
-    fetch("/api/stats").then(function(r){ return r.ok ? r.json() : null; }).then(showStats).catch(function(){});
+    fetch("/api/stats", { cache: "no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(showStats).catch(function(){});
   }
   loadStats();
 
@@ -777,13 +781,60 @@
       var data = await res.json().catch(function(){ return {}; });
       if (!res.ok){ note(data.error || "Something went wrong. Please try again."); return; }
       renderResult(data);
-      showStats(data.stats);
+      loadStats();
     } catch (err) {
       note("Couldn't reach the Yes Check. Check your connection and try again.");
     } finally {
       btn.removeAttribute("aria-busy"); btn.disabled = false; btn.textContent = "Run it again";
     }
   }
+
+
+  // Keep the amount and month boxes in step with what the visitor types,
+  // so the maths and the message always use the same figures.
+  var MONTH_RE = /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b(?:\s+(20\d\d))?/gi;
+  var MONTH_KEYS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+  function readAmount(text){
+    var re = /(?:rs\.?\s*|₹\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|K|hazaar|hazar|thousand|lakh|lac|L)?\b/g, m;
+    while ((m = re.exec(text))){
+      var hasRs = /rs|₹/i.test(m[0]), unit = (m[2] || "").toLowerCase();
+      var v = parseFloat(m[1].replace(/,/g, ""));
+      if (["k","hazaar","hazar","thousand"].indexOf(unit) > -1) v *= 1000;
+      else if (["lakh","lac","l"].indexOf(unit) > -1) continue;      // lakh amounts are usually the event cost
+      else if (!hasRs && m[1].indexOf(",") === -1) continue;           // bare numbers like 2027 are not amounts
+      if (v >= 500 && v < 200000) return Math.round(v);
+    }
+    return null;
+  }
+  function readMonth(text){
+    var found = [], m; MONTH_RE.lastIndex = 0;
+    while ((m = MONTH_RE.exec(text))){
+      var after = text.slice(m.index + m[0].length, m.index + m[0].length + 6).toLowerCase();
+      var before = text.slice(Math.max(0, m.index - 6), m.index).toLowerCase();
+      found.push({ mi: MONTH_KEYS.indexOf(m[1].slice(0,3).toLowerCase()), year: m[2] ? Number(m[2]) : null,
+                   start: /^\s*se\b/.test(after) || /from\s*$/.test(before) || /starting\s*$/.test(before) });
+    }
+    var pick = found.filter(function(f){ return f.start; })[0] || (found.length === 1 ? found[0] : null);
+    if (!pick) return null;
+    var d = new Date(), y = pick.year || (pick.mi >= d.getMonth() ? d.getFullYear() : d.getFullYear() + 1);
+    return y + "-" + String(pick.mi + 1).padStart(2, "0");
+  }
+  function flash(elm){ elm.classList.remove("synced"); void elm.offsetWidth; elm.classList.add("synced"); }
+  var syncTimer;
+  $("ask").addEventListener("input", function(){
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(function(){
+      var text = $("ask").value, notes = [];
+      var amt = readAmount(text);
+      if (amt && Number($("ask-amt").value) !== amt){ $("ask-amt").value = amt; flash($("ask-amt")); notes.push("amount to " + fmt(amt)); }
+      var mon = readMonth(text);
+      if (mon && $("ask-start").value !== mon){
+        var before = $("ask-start").value; setMonth($("ask-start"), mon);
+        if ($("ask-start").value !== before){ flash($("ask-start")); notes.push("start month to " + $("ask-start").selectedOptions[0].textContent); }
+      }
+      $("sync-note").textContent = notes.length ? "Updated the " + notes.join(" and ") + " from what you typed. Change it if that's wrong." : "";
+    }, 500);
+  });
 
   $("yes-form").addEventListener("submit", runYesCheck);
 })();
