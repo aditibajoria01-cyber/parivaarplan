@@ -9,7 +9,7 @@
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 const MAX_OUTPUT_TOKENS = 300;
 const DAILY_CAP = 5; // Yes Checks per visitor per 24 hours
-const GEMINI_TIMEOUT_MS = 8000; // if Gemini takes longer, use the standard message so the page answers within 10 seconds
+const GEMINI_TIMEOUT_MS = 8500; // if Gemini takes longer, use the standard message so the page answers within 10 seconds
 
 const SYSTEM_PROMPT = `You are ParivaarPlan's message writer. ParivaarPlan helps young Indian professionals who send money home answer a family money ask with a plan. Code has already done all the maths. You never calculate, change or add any number.
 
@@ -213,6 +213,26 @@ async function askGemini(askText, result) {
   };
 }
 
+
+// Gemini usually answers in 1 to 4 seconds but sometimes stalls past 8. If the first request
+// hasn't answered within BACKUP_AFTER_MS, send one identical backup request and use whichever
+// answers first. Everything stops at GEMINI_TIMEOUT_MS so the visitor always gets an answer fast.
+const BACKUP_AFTER_MS = 3500;
+function geminiWithBackup(askText, result) {
+  let answered = false, backupTimer, limitTimer;
+  const first = askGemini(askText, result);
+  first.then(() => { answered = true; }, () => {});
+  const backup = new Promise((resolve) => { backupTimer = setTimeout(resolve, BACKUP_AFTER_MS); })
+    .then(() => (answered ? Promise.reject(new Error("backup not needed")) : askGemini(askText, result)));
+  const limit = new Promise((_, reject) => {
+    limitTimer = setTimeout(() => reject(new Error(`Gemini took longer than ${GEMINI_TIMEOUT_MS} ms`)), GEMINI_TIMEOUT_MS);
+  });
+  const winner = Promise.any([first, backup]).catch((e) => {
+    throw new Error("Gemini failed: " + (e.errors || []).map((x) => x.message).join(" | "));
+  });
+  return Promise.race([winner, limit]).finally(() => { clearTimeout(backupTimer); clearTimeout(limitTimer); });
+}
+
 // Guardrail check: every number in Gemini's message must come from the code or the ask.
 function numbersIn(text) {
   const out = [];
@@ -336,11 +356,7 @@ module.exports = async function handler(req, res) {
 
     let ai, source = "gemini";
     try {
-      // Hard time limit: whatever happens inside, stop waiting for Gemini after GEMINI_TIMEOUT_MS
-      ai = await Promise.race([
-        askGemini(i.askText, result),
-        new Promise((_, reject) => setTimeout(() => reject(new Error(`Gemini took longer than ${GEMINI_TIMEOUT_MS} ms`)), GEMINI_TIMEOUT_MS)),
-      ]);
+      ai = await geminiWithBackup(i.askText, result);
       if (ai.onTopic && (!ai.message || !messageIsSafe(ai.message, i.askText, result.shareable))) {
         ai.message = templateMessage(i, result); // Gemini added a number of its own: use the safe template
         source = "template_after_number_check";
