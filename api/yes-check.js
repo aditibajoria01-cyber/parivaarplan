@@ -9,6 +9,7 @@
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 const MAX_OUTPUT_TOKENS = 300;
 const DAILY_CAP = 5; // Yes Checks per visitor per 24 hours
+const GEMINI_TIMEOUT_MS = 8000; // if Gemini takes longer, use the standard message so the page answers within 10 seconds
 
 const SYSTEM_PROMPT = `You are ParivaarPlan's message writer. ParivaarPlan helps young Indian professionals who send money home answer a family money ask with a plan. Code has already done all the maths. You never calculate, change or add any number.
 
@@ -17,9 +18,9 @@ You receive the ask as the visitor typed it (English or Hinglish) and the code's
 Return JSON only, in this exact shape:
 {"on_topic": true or false, "ask_summary": "...", "message": "..."}
 
-ask_summary: up to 20 words. No personal names. Say who asked, the amount, the timing and the event, e.g. "Parent asks 25k a month from April; father retiring; sister's wedding".
+ask_summary: up to 20 words. No personal names: write "sister", "brother" or "family member" instead of a name. Say who asked, the amount, the timing and the event, e.g. "Parent asks 25k a month from April; father retiring; sister's wedding".
 
-message: a warm WhatsApp reply from the visitor to the family member, 30 to 60 words, in the same language style as the ask (Hinglish in, Hinglish out). Use only the numbers you were given. Match the verdict. For "Not yet", offer a smaller amount or a later date from the plan, never a flat no. Never guilt, lecture or mention ParivaarPlan.
+message: a warm WhatsApp reply from the visitor to the family member, 30 to 60 words, in the same language style as the ask (Hinglish in, Hinglish out). The message may mention ONLY the amount asked and the month it starts (for "Not yet", the smaller amount from numbers_for_the_message). Never mention salary, spending, savings, emergency cushion, spare cash, fund amounts or the plan figures: those are private to the visitor. Match the verdict. For "Not yet", offer the smaller amount or a later date, never a flat no. Never guilt, lecture or mention ParivaarPlan.
 
 REFUSAL RULES:
 1. If the input asks for investment, loan, insurance, tax or legal advice, or which financial product to buy, set on_topic to false, ask_summary to "off-topic: financial advice request", and message to exactly: "ParivaarPlan only helps you plan what you can keep up for family. It can't give investment, loan, insurance, tax or legal advice."
@@ -59,12 +60,13 @@ function computeYesCheck(i) {
   const A = rs(i.ask);
   const startL = label(start);
   const cushionTxt = cushion > 0 ? `, plus ${money(cushion)} as your emergency cushion` : "";
-  const r = { start, figures: [i.ask, i.pay, i.spend, i.sent, s0, s1, cushion] };
+  const r = { start, figures: [i.ask, i.pay, i.spend, i.sent, s0, s1, cushion], shareable: [i.ask] };
 
   // A. the ask alone does not fit
   if (s1 < 0) {
     const maxAsk = down1000(i.pay - i.spend - 0.1 * i.pay); // keep 10% of pay spare
     r.figures.push(maxAsk, -s1);
+    if (maxAsk > 0) r.shareable.push(maxAsk);
     return Object.assign(r, {
       verdictType: "not_yet", verdictLabel: "Not yet",
       verdict: `Not yet. ${A} a month is ${rs(-s1)} more than your month can carry.`,
@@ -144,6 +146,7 @@ function computeYesCheck(i) {
   const needPerMonth = mB > 0 ? monthlyB : up100(remaining);
   const maxAsk = mB > 0 ? down1000(i.pay - i.spend - monthlyB - 0.05 * i.pay) : 0;
   r.figures.push(needPerMonth, maxAsk);
+  if (maxAsk > 0) r.shareable.push(maxAsk);
   return Object.assign(r, {
     verdictType: "not_yet", verdictLabel: "Not yet",
     verdict: `Not yet. ${A} a month from ${startL} leaves too little for the ${word} in ${evL}.`,
@@ -164,7 +167,7 @@ async function askGemini(askText, result) {
     verdict_sentence: result.verdict,
     plan: result.plan,
     watch_out: result.watchOut,
-    numbers_you_may_use: [...new Set(result.figures.filter((n) => Number.isFinite(n) && n > 0).map(Math.round))],
+    numbers_for_the_message: result.shareable,
   };
   // Try with thinking turned down (so all 300 tokens go to the answer); if this model
   // rejects that setting, retry once without it.
@@ -177,10 +180,12 @@ async function askGemini(askText, result) {
       responseMimeType: "application/json",
     };
     if (thinking) generationConfig.thinkingConfig = thinking;
+    const timer = AbortSignal.timeout(GEMINI_TIMEOUT_MS); // never keep the visitor waiting
     res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
       {
         method: "POST",
+        signal: timer,
         headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
@@ -222,8 +227,8 @@ function numbersIn(text) {
   }
   return out;
 }
-function messageIsSafe(message, askText, figures) {
-  const allowed = new Set([...figures, ...numbersIn(askText)].map(Math.round));
+function messageIsSafe(message, askText, shareable) {
+  const allowed = new Set([...shareable, ...numbersIn(askText)].map(Math.round));
   return numbersIn(message).every((v) => v <= 31 || (v >= 2020 && v <= 2040) || allowed.has(Math.round(v)));
 }
 function templateMessage(i, r) {
@@ -237,6 +242,17 @@ function templateMessage(i, r) {
 // so a Gemini outage never lets them through as a normal Yes Check.
 const ADVICE_PATTERN = /mutual\s*fund|\bsip\b|stocks?\b|crypto|bitcoin|invest|\bloan|insurance|\btax|legal|lawyer|which (fund|bank|policy|card)/i;
 const ADVICE_REFUSAL = "ParivaarPlan only helps you plan what you can keep up for family. It can't give investment, loan, insurance, tax or legal advice.";
+
+// Privacy: remove personal names before anything is stored. Any capitalised word in the ask
+// that is not a family word, month or common word is treated as a name.
+const NOT_NAMES = new Set(["mummy","mumma","mum","mom","mother","maa","ma","papa","pappa","dad","daddy","father","bhaiya","bhai","didi","di","dada","dadi","nana","nani","chacha","chachi","mama","mami","beta","beti","ji","i","im","main","hum","rs","inr","ok","hi","hello","please","can","could","will","would","should","is","the","a","my","our","from","in","for","and","se","ki","ka","ke","hai","bhi","ho","kya","aap","tum","yaar","wedding","shaadi","retirement",
+  "january","february","march","april","may","june","july","august","september","october","november","december","jan","feb","mar","apr","jun","jul","aug","sep","sept","oct","nov","dec","diwali","holi","eid","christmas"]);
+function scrubNames(text, askText) {
+  let out = String(text || "");
+  const words = new Set((String(askText).match(/\b[A-Z][a-zA-Z]{2,}\b/g) || []).filter((w) => !NOT_NAMES.has(w.toLowerCase())));
+  for (const w of words) out = out.replace(new RegExp(`\\b${w}('s)?\\b`, "g"), (_, poss) => (poss ? "family member's" : "family member"));
+  return out;
+}
 
 // ---------- 3. Supabase (REST, service key stays on the server) ----------
 function sbHeaders(extra = {}) {
@@ -305,10 +321,13 @@ module.exports = async function handler(req, res) {
   const { i, error } = readInput(body);
   if (error) return res.status(400).json({ error });
 
+  const t0 = Date.now(), timings = {};
+  const mark = (k) => { timings[k] = Date.now() - t0; };
   try {
     // Per-visitor cap: count this visitor's rows in the last 24 hours
     const since = new Date(Date.now() - 24 * 3600e3).toISOString();
     const used = await sbCount(`visitor_id=eq.${encodeURIComponent(i.visitorId)}&created_at=gte.${encodeURIComponent(since)}`);
+    mark("cap_check");
     if (used >= DAILY_CAP) {
       return res.status(429).json({ error: `You've used today's ${DAILY_CAP} Yes Checks. Come back tomorrow.` });
     }
@@ -317,8 +336,12 @@ module.exports = async function handler(req, res) {
 
     let ai, source = "gemini";
     try {
-      ai = await askGemini(i.askText, result);
-      if (ai.onTopic && (!ai.message || !messageIsSafe(ai.message, i.askText, result.figures))) {
+      // Hard time limit: whatever happens inside, stop waiting for Gemini after GEMINI_TIMEOUT_MS
+      ai = await Promise.race([
+        askGemini(i.askText, result),
+        new Promise((_, reject) => setTimeout(() => reject(new Error(`Gemini took longer than ${GEMINI_TIMEOUT_MS} ms`)), GEMINI_TIMEOUT_MS)),
+      ]);
+      if (ai.onTopic && (!ai.message || !messageIsSafe(ai.message, i.askText, result.shareable))) {
         ai.message = templateMessage(i, result); // Gemini added a number of its own: use the safe template
         source = "template_after_number_check";
       }
@@ -335,6 +358,7 @@ module.exports = async function handler(req, res) {
       source = advice ? "code_guardrail_gemini_failed" : "template_gemini_failed";
     }
 
+    mark("gemini");
     await sbInsert({
       visitor_id: i.visitorId,
       input: {
@@ -345,17 +369,19 @@ module.exports = async function handler(req, res) {
         savings_band: i.savingsBand,
         ask_start: label(result.start),
         event: i.event ? { type: i.event.type, month: label(i.event.month), cost_band_lakh: band(i.event.cost / 1e5, 5), people: i.event.people } : null,
-        ask_summary: ai.askSummary,
+        ask_summary: scrubNames(ai.askSummary, i.askText),
         message_source: source,
       },
       verdict: ai.onTopic ? result.verdictType : "refused",
-      output: ai.message,
+      output: scrubNames(ai.message, i.askText), // the visitor sees the full message; the stored copy has names removed
       input_tokens: ai.inputTokens,
       output_tokens: ai.outputTokens,
     });
 
-    let stats = null;
-    try { stats = await readStats(); } catch (e) { console.error(e); }
+    mark("saved");
+    console.log("TIMINGS_MS", JSON.stringify(timings), "source:", source);
+    res.setHeader("Server-Timing", Object.entries(timings).map(([k, v]) => `${k};dur=${v}`).join(", "));
+    const stats = null; // the page fetches /api/stats separately, so the answer isn't held up
 
     if (!ai.onTopic) return res.status(200).json({ refused: true, message: ai.message, messageSource: source, stats });
     return res.status(200).json({
