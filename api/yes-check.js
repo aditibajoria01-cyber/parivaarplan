@@ -4,7 +4,9 @@
 // 3. Supabase stores every exchange (bands only, never raw salary or savings).
 // Keys come ONLY from Vercel environment variables. Never paste a key in this file.
 
-const MODEL = "gemini-2.5-flash-lite";
+// Model name: Google retired gemini-2.5-flash-lite for new users, so we use the 3.5 version.
+// You can override it without editing code by adding a GEMINI_MODEL environment variable in Vercel.
+const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 const MAX_OUTPUT_TOKENS = 300;
 const DAILY_CAP = 5; // Yes Checks per visitor per 24 hours
 
@@ -164,26 +166,38 @@ async function askGemini(askText, result) {
     watch_out: result.watchOut,
     numbers_you_may_use: [...new Set(result.figures.filter((n) => Number.isFinite(n) && n > 0).map(Math.round))],
   };
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: JSON.stringify(payload) }] }],
-        generationConfig: {
-          maxOutputTokens: MAX_OUTPUT_TOKENS,
-          temperature: 0.6,
-          responseMimeType: "application/json",
-          thinkingConfig: { thinkingBudget: 0 },
-        },
-      }),
-    }
-  );
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  // Try with thinking turned down (so all 300 tokens go to the answer); if this model
+  // rejects that setting, retry once without it.
+  const thinkingOptions = [{ thinkingLevel: "minimal" }, { thinkingBudget: 0 }, null];
+  let res, lastError = "";
+  for (const thinking of thinkingOptions) {
+    const generationConfig = {
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+      temperature: 0.6,
+      responseMimeType: "application/json",
+    };
+    if (thinking) generationConfig.thinkingConfig = thinking;
+    res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: "user", parts: [{ text: JSON.stringify(payload) }] }],
+          generationConfig,
+        }),
+      }
+    );
+    if (res.ok) break;
+    lastError = (await res.text()).slice(0, 300);
+    if (!(res.status === 400 && /thinking/i.test(lastError))) break; // only retry for the thinking setting
+  }
+  if (!res.ok) throw new Error(`Gemini ${res.status} (${MODEL}): ${lastError}`);
   const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  const text = parts.filter((p) => !p.thought).map((p) => p.text || "").join("");
+  if (!text) throw new Error(`Gemini returned no text (finishReason: ${data?.candidates?.[0]?.finishReason})`);
   const out = JSON.parse(text.replace(/^```(?:json)?|```$/g, "").trim());
   return {
     onTopic: out.on_topic !== false,
@@ -218,6 +232,11 @@ function templateMessage(i, r) {
   if (r.verdictType === "yes_if" && i.event) return `Haan, ${m} se ${rs(i.ask)} a month pakka. I'm also saving for the ${EVENT_WORD[i.event.type] || "family"} from now so there's no tension later.`;
   return `Haan, ${m} se ${rs(i.ask)} a month pakka. I've planned for it, so don't worry.`;
 }
+
+// Backup guardrail, used only if Gemini is down: refuse obvious financial-advice requests in code,
+// so a Gemini outage never lets them through as a normal Yes Check.
+const ADVICE_PATTERN = /mutual\s*fund|\bsip\b|stocks?\b|crypto|bitcoin|invest|\bloan|insurance|\btax|legal|lawyer|which (fund|bank|policy|card)/i;
+const ADVICE_REFUSAL = "ParivaarPlan only helps you plan what you can keep up for family. It can't give investment, loan, insurance, tax or legal advice.";
 
 // ---------- 3. Supabase (REST, service key stays on the server) ----------
 function sbHeaders(extra = {}) {
@@ -304,9 +323,16 @@ module.exports = async function handler(req, res) {
         source = "template_after_number_check";
       }
     } catch (e) {
-      console.error(e);
-      ai = { onTopic: true, askSummary: "", message: templateMessage(i, result), inputTokens: null, outputTokens: null };
-      source = "template_gemini_failed";
+      console.error("GEMINI FAILED:", e.message);
+      const advice = ADVICE_PATTERN.test(i.askText);
+      ai = {
+        onTopic: !advice,
+        askSummary: advice ? "off-topic: financial advice request" : "",
+        message: advice ? ADVICE_REFUSAL : templateMessage(i, result),
+        inputTokens: null,
+        outputTokens: null,
+      };
+      source = advice ? "code_guardrail_gemini_failed" : "template_gemini_failed";
     }
 
     await sbInsert({
@@ -331,7 +357,7 @@ module.exports = async function handler(req, res) {
     let stats = null;
     try { stats = await readStats(); } catch (e) { console.error(e); }
 
-    if (!ai.onTopic) return res.status(200).json({ refused: true, message: ai.message, stats });
+    if (!ai.onTopic) return res.status(200).json({ refused: true, message: ai.message, messageSource: source, stats });
     return res.status(200).json({
       verdictType: result.verdictType,
       verdictLabel: result.verdictLabel,
@@ -339,6 +365,7 @@ module.exports = async function handler(req, res) {
       plan: result.plan,
       watchOut: result.watchOut,
       message: ai.message,
+      messageSource: source, // "gemini" when the AI wrote the message
       stats,
     });
   } catch (e) {
