@@ -722,6 +722,11 @@
     wrap.appendChild(block("", "Plan", r.plan));
     wrap.appendChild(block("r-watch", "Watch out", r.watchOut));
     wrap.appendChild(messageBlock(r.message));
+    if (r.messageSource && r.messageSource !== "gemini"){
+      var fb = el("p", "panel-note", "The AI message writer is unavailable right now, so this is a standard message. Your verdict and plan are unaffected.");
+      fb.style.margin = "0";
+      wrap.appendChild(fb);
+    }
     area.appendChild(wrap);
   }
 
